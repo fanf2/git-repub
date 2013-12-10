@@ -3,7 +3,23 @@
 set -e
 
 usage() {
-	echo 1>&2 'usage: git-repub <publish> <rebasing>'
+	cat 1>&2 <<EOF
+usage: git repub [options] [--from <branch>] [--onto <branch>]
+
+    --from <branch>    the rebasing branch to be published
+    --onto <branch>    the history-preserving publication branch
+
+If one of --from or --onto is missing, the other defaults to the
+current branch. If both are missing, the current branch's config is
+checked to find its corresponding repub-from or repub-onto branch.
+
+    --dry-run    do not make any commits
+    --force      do not check that the --onto branch looks right
+    --init       same as --config --start
+    --config     remember the --from and --onto branches
+    --start      create the --onto branch
+
+EOF
 	exit 1
 }
 
@@ -63,12 +79,13 @@ head="$(git rev-parse --abbrev-ref HEAD)"
 # only one of these should be set for any branch
 if [ -z "$from" ] && [ -z "$onto" ]
 then
-	from="$(git config "branch.$head.repub-from")"
-	onto="$(git config "branch.$head.repub-onto")"
+	from="$(git config "branch.$head.repub-from" || :)"
+	onto="$(git config "branch.$head.repub-onto" || :)"
 fi
 
 if [ -z "$from" ] && [ -z "$onto" ]
-then usage
+then	echo 1>&2 "error: could not find repub config for branch $head"
+	exit 1
 fi
 
 # missing branch name defaults to current branch
