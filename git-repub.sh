@@ -112,7 +112,7 @@ then
 	empty_tree="$(git hash-object -t tree /dev/null)"
 	message="Create $onto for repub from $from"
 	if $doit
-	then	commit="$(echo "$msg" | git commit-tree $empty_tree)"
+	then	commit="$(echo "$message" | git commit-tree $empty_tree)"
 		git branch $onto $commit
 	fi
 	echo $message
@@ -137,8 +137,9 @@ fi
 
 message="Update $onto to $(git describe --tags "$from")"
 if $doit
-then	commit="$(echo "$msg" | git commit-tree -p $onto_hash -p $from_hash $from_hash^{tree})"
-	git update-ref -m "$msg" $onto_head $commit $onto_hash
+then	commit="$(echo "$message" |
+		 git commit-tree -p $onto_hash -p $from_hash $from_hash^{tree})"
+	git update-ref -m "$message" $onto_head $commit $onto_hash
 fi
 echo $message
 
