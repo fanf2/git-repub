@@ -103,10 +103,6 @@ if [ -z "$onto" ]
 then onto="$head"
 fi
 
-from_hash="$(git rev-parse "$from")"
-onto_hash="$(git rev-parse "$onto")"
-onto_head="$(git rev-parse --symbolic-full-name "$onto")"
-
 if $start
 then
 	empty_tree="$(git hash-object -t tree /dev/null)"
@@ -118,6 +114,10 @@ then
 	echo $message
 	check=false
 fi
+
+from_hash="$(git rev-parse "$from")"
+onto_hash="$(git rev-parse "$onto")"
+onto_head="$(git rev-parse --symbolic-full-name "$onto")"
 
 if $check
 then
