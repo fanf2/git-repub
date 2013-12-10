@@ -135,7 +135,8 @@ then
 	git config "branch.$onto.repub-from" "$from"
 fi
 
-message="Update $onto to $(git describe --tags "$from")"
+message="Update $onto to $(git describe --tags "$from" 2>/dev/null ||
+	git name-rev --name-only "$from_hash")"
 if $doit
 then	commit="$(echo "$message" |
 		 git commit-tree -p $onto_hash -p $from_hash $from_hash^{tree})"
