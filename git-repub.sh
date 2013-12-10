@@ -26,6 +26,8 @@ checked to find its corresponding repub-from or repub-onto branch.
     --config     remember the --from and --onto branches
     --start      create the --onto branch
 
+For more information see http://fanf.livejournal.com/128282.html
+
 EOF
 	exit 1
 }
