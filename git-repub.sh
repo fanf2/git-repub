@@ -1,4 +1,11 @@
 #!/bin/sh
+#
+# git-repub: make rebasing branches publishable
+#
+# Written by Tony Finch <fanf2@cam.ac.uk> <dot@dotat.at>
+# at the University of Cambridge Computing Service.
+# You may do anything with this. It has no warranty.
+# <http://creativecommons.org/publicdomain/zero/1.0/>
 
 set -e
 
