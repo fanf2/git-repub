@@ -1,0 +1,89 @@
+git-repub(1)
+=============
+
+NAME
+----
+git-repub - Make rebasing branches and their history publishable
+
+SYNOPSIS
+--------
+[verse]
+'git repub' [options] [--from <branch>] [--onto <branch>]
+
+DESCRIPTION
+-----------
+The 'git repub' command maintains a branch that can be used to record
+the history of another branch that is repeatedly rebased. Updates to
+the history branch are fast-forwards, so they are convenient to
+publish.
+
+The --from branch is the rebasing branch and the --onto branch is the
+publication branch onto which another commit will be added. If one of
+--from or --onto is missing, the other defaults to the current branch.
+If both are missing, the current branch's config is checked to find
+its corresponding repub-from or repub-onto branch.
+
+The commits on a repub-onto branch are merges, where the first parent
+is the previous head of the repub-onto branch and the second parent is
+the head of the repub-from branch. The tree resulting from the merge
+is always the same as the tree at the head of the repub-from branch -
+the previous contents of the repub-onto branch are ignored. Because
+this is a somewhat heavy-handed operation, and to protect against
+mistakes, by default 'git repub' checks that the head of the
+repub-onto branch matches this structure.
+
+OPTIONS
+-------
+--from <branch>::
+	The rebasing branch whose head is to be published. If the
+	--from option is not given and --onto is given, the --from
+	<branch> defaults to the current branch.
+
+--onto <branch>::
+	The history-preserving publication branch on which a merge
+	commit will be constructed. If the --onto option is not given
+	and --from is given, the --onto <branch> defaults to the
+	current branch.
+
+--dry-run::
+	Do not make any commits, but report what would happen.
+
+--init::
+	Short for --config --start.
+
+--config::
+	Record the --from and --onto options in the repository's
+	configuration as well as making the merge commit. (See
+	CONFIGURATION below.)
+
+--config-only::
+	Just record the configuration and do not make the merge
+	commit. Equivalent to --config --dry-run.
+
+--start::
+	Create the --onto branch. Two commits will be created
+	immediately: the first commit will be empty and the second
+	commit will be a 'git repub' merge.
+
+--force::
+	Do not check that the head of the --onto branch is a 'git
+	repub' merge.
+
+
+CONFIGURATION
+-------------
+
+branch.<branch>.repub-onto::
+	Indicates the <branch> is a repub-from branch, and the
+	corresponding repub-onto branch is the value of this config
+	setting.
+
+branch.<branch>.repub-from::
+	Indicates the <branch> is a repub-onto branch, and the
+	corresponding repub-from branch is the value of this config
+	setting.
+
+
+GIT
+---
+Part of the linkgit:git[1] suite
