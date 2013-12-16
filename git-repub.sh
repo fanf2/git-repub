@@ -124,9 +124,14 @@ onto_head="$(git rev-parse --symbolic-full-name "$onto")"
 if $check
 then
 	onto_tree="$(git rev-parse $onto_hash^{tree} 2>&1)"
-	onto2tree="$(git rev-parse $onto_hash^2^{tree} 2>&1)"
+	onto2hash="$(git rev-parse $onto_hash^2      2>&1)"
+	onto2tree="$(git rev-parse $onto2hash^{tree} 2>&1)"
 	if [ "$onto_tree" != "$onto2tree" ]
 	then	echo 1>&2 "$onto does not look like a repub-onto branch"
+		exit 1
+	fi
+	if [ "$from_hash" = "$onto2hash" ]
+	then	echo 1>&2 "$from has already been merged onto $onto"
 		exit 1
 	fi
 fi
