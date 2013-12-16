@@ -12,16 +12,16 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The 'git repub' command maintains a branch that can be used to record
+The 'git repub' command maintains a branch that you can use to record
 the history of another branch that is repeatedly rebased. Updates to
 the history branch are fast-forwards, so they are convenient to
 publish.
 
 The --from branch is the rebasing branch and the --onto branch is the
-publication branch onto which another commit will be added. If one of
---from or --onto is missing, the other defaults to the current branch.
-If both are missing, the current branch's config is checked to find
-its corresponding repub-from or repub-onto branch.
+history publication branch onto which 'git repub' will add another
+commit. If one of --from or --onto is missing, the other defaults to
+the current branch. If both are missing, the current branch's config
+is checked to find its corresponding repub-from or repub-onto branch.
 
 The commits on a repub-onto branch are merges, where the first parent
 is the previous head of the repub-onto branch and the second parent is
