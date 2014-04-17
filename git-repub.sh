@@ -7,6 +7,12 @@
 # You may do anything with this. It has no warranty.
 # <http://creativecommons.org/publicdomain/zero/1.0/>
 
+# TODO
+#
+# an unpub action that creates a branch pointing to repub-branch^2
+# or updates it - need to check the update is safe
+# $ git merge-base --is-ancestor repub-from repub-onto
+
 set -e
 
 usage() {
@@ -33,8 +39,10 @@ EOF
 }
 
 check=true
+check_only=false
 start=false
 config=false
+unpub=false
 doit=true
 onto=""
 from=""
@@ -48,6 +56,10 @@ do
 		;;
 	--start)
 		start=true
+		shift
+		;;
+	--check)
+		check_only=true
 		shift
 		;;
 	--config)
@@ -92,7 +104,7 @@ then
 	onto="$(git config "branch.$head.repub-onto" || :)"
 fi
 
-if [ -z "$from" ] && [ -z "$onto" ]
+if ! $check_only && [ -z "$from" ] && [ -z "$onto" ]
 then	echo 1>&2 "error: could not find repub config for branch $head"
 	exit 1
 fi
@@ -129,6 +141,9 @@ then
 	if [ "$onto_tree" != "$onto2tree" ]
 	then	echo 1>&2 "$onto does not look like a repub-onto branch"
 		exit 1
+	fi
+	if $check_only
+	then	exit 0
 	fi
 	if [ "$from_hash" = "$onto2hash" ]
 	then	echo 1>&2 "$from has already been merged onto $onto"

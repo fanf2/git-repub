@@ -34,7 +34,7 @@ repub-onto branch matches this structure.
 
 The 'git repub' command performs a similar function to `stg publish`,
 though the structure of a repub-onto branch is rather different from a
-stg public branch. A repub-onto branch can be thought of as tracking
+StGit public branch. A repub-onto branch can be thought of as tracking
 the head of the repub-from branch in a similar way to its reflog,
 except it is updated manually and it is shareable.
 
