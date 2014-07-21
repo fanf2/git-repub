@@ -38,7 +38,7 @@ EOF
 	exit 1
 }
 
-check=true
+check_onto=true
 check_only=false
 start=false
 config=false
@@ -51,7 +51,7 @@ while [ $# != 0 ]
 do
 	case "$1" in
 	--force)
-		check=false
+		check_onto=false
 		shift
 		;;
 	--start)
@@ -126,14 +126,14 @@ then
 		git branch $onto $commit
 	fi
 	echo $message
-	check=false
+	check_onto=false
 fi
 
 from_hash="$(git rev-parse "$from")"
 onto_hash="$(git rev-parse "$onto")"
 onto_head="$(git rev-parse --symbolic-full-name "$onto")"
 
-if $check
+if $check_onto
 then
 	onto_tree="$(git rev-parse $onto_hash^{tree} 2>&1)"
 	onto2hash="$(git rev-parse $onto_hash^2      2>&1)"
