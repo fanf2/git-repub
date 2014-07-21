@@ -151,6 +151,32 @@ then
 	fi
 fi
 
+# To unpub we reset the repub-from branch to repub-onto^2, i.e. the latest
+# published version. This is safe if repub-from is a second parent of one
+# of the direct ancestors of repub-onto, i.e. repub-from == repub-onto~N^2
+# for some N. To check this we verify that the repub-from..repub-onto
+# ancestry path is non-empty and it is a prefix of the first-parent history
+# of the repub-onto branch.
+
+# We check there is a newline between $ancestry_path and the rest of
+# $onto_parentage. This cannot match if $ancestry_path is empty because
+# $onto_parentage does not start with a newline.
+$nl='
+'
+
+if $check_from
+then
+	onto_parentage="$(git rev-list --first-parent $onto_hash)"
+	ancestry_path="$(git rev-list --ancestry-path $from_hash..$onto_hash)"
+	case $onto_parentage in
+	($ancestry_path$nl*)
+		: ok ;;
+	(*)	echo 1>&2 "it is not safe to update $from"
+		echo 1>&2 "$onto is not a descendent of $from"
+		exit 1
+	esac
+fi
+
 if $config
 then
 	git config "branch.$from.repub-onto" "$onto"
