@@ -120,7 +120,7 @@ fi
 if $start
 then
 	empty_tree="$(git hash-object -t tree /dev/null)"
-	message="Create $onto for repub from $from"
+	message="git repub --from $from --onto $onto --start"
 	if $doit
 	then	commit="$(echo "$message" | git commit-tree $empty_tree)"
 		git branch $onto $commit
@@ -186,7 +186,7 @@ then
 	git config "branch.$onto.repub-from" "$from"
 fi
 
-message="git-repub --from $from --onto $onto \
+message="git repub --from $from --onto $onto \
 # rev $(git describe --tags "$from" 2>/dev/null ||
 	git name-rev --name-only "$from_hash")"
 if $doit
