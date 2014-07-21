@@ -187,7 +187,8 @@ then
 	git config "branch.$onto.repub-from" "$from"
 fi
 
-message="Update $onto to $(git describe --tags "$from" 2>/dev/null ||
+message="git-repub --from $from --onto $onto \
+# rev $(git describe --tags "$from" 2>/dev/null ||
 	git name-rev --name-only "$from_hash")"
 if $doit
 then	commit="$(echo "$message" |
