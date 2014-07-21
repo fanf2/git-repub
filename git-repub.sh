@@ -7,12 +7,6 @@
 # You may do anything with this. It has no warranty.
 # <http://creativecommons.org/publicdomain/zero/1.0/>
 
-# TODO
-#
-# an unpub action that creates a branch pointing to repub-branch^2
-# or updates it - need to check the update is safe
-# $ git merge-base --is-ancestor repub-from repub-onto
-
 set -e
 
 usage() {
@@ -38,8 +32,10 @@ EOF
 	exit 1
 }
 
+check_from=false
 check_onto=true
 check_only=false
+force=false
 start=false
 config=false
 unpub=false
@@ -51,7 +47,7 @@ while [ $# != 0 ]
 do
 	case "$1" in
 	--force)
-		check_onto=false
+		force=true
 		shift
 		;;
 	--start)
@@ -59,6 +55,7 @@ do
 		shift
 		;;
 	--check)
+		check_from=true
 		check_only=true
 		shift
 		;;
@@ -74,6 +71,11 @@ do
 	--init)
 		start=true
 		config=true
+		shift
+		;;
+	--unpub)
+		unpub=true
+		check_from=true
 		shift
 		;;
 	--from)
@@ -93,6 +95,12 @@ do
 		;;
 	esac
 done
+
+if $force
+then
+	check_from=false
+	check_onto=false
+fi
 
 head="$(git rev-parse --abbrev-ref HEAD)"
 
@@ -117,7 +125,7 @@ if [ -z "$onto" ]
 then onto="$head"
 fi
 
-if $start
+if $start && ! $unpub
 then
 	empty_tree="$(git hash-object -t tree /dev/null)"
 	message="git repub --from $from --onto $onto --start"
@@ -129,7 +137,13 @@ then
 	check_onto=false
 fi
 
-from_hash="$(git rev-parse "$from")"
+if $start && $unpub
+then
+	check_from=false
+else
+	from_hash="$(git rev-parse "$from")"
+fi
+
 onto_hash="$(git rev-parse "$onto")"
 onto_head="$(git rev-parse --symbolic-full-name "$onto")"
 
@@ -150,7 +164,7 @@ then
 	then	exit 0
 	fi
 	if [ "$from_hash" = "$onto2hash" ]
-	then	echo 1>&2 "git-repub: $from has already been merged onto $onto"
+	then	echo 1>&2 "git-repub: $from and $onto are up-to-date"
 		exit 1
 	fi
 fi
@@ -185,6 +199,15 @@ if $config
 then
 	git config "branch.$from.repub-onto" "$onto"
 	git config "branch.$onto.repub-from" "$from"
+fi
+
+if $unpub
+then
+	message="git repub --unpub --onto $onto --from $from"
+	git update-ref -m "$message" "refs/heads/$from" "$onto_hash^2"
+	git checkout "$from"
+	echo "Updated $from to $onto^2"
+	exit 0
 fi
 
 message="git repub --from $from --onto $onto \
