@@ -105,7 +105,7 @@ then
 fi
 
 if ! $check_only && [ -z "$from" ] && [ -z "$onto" ]
-then	echo 1>&2 "error: could not find repub config for branch $head"
+then	echo 1>&2 "git-repub: could not find repub config for branch $head"
 	exit 1
 fi
 
@@ -143,14 +143,14 @@ then
 	onto2hash="$(git rev-parse $onto_hash^2      2>&1)"
 	onto2tree="$(git rev-parse $onto2hash^{tree} 2>&1)"
 	if [ "$onto_tree" != "$onto2tree" ]
-	then	echo 1>&2 "$onto does not look like a repub-onto branch"
+	then	echo 1>&2 "git-repub: $onto does not look like a repub-onto branch"
 		exit 1
 	fi
 	if $check_only
 	then	exit 0
 	fi
 	if [ "$from_hash" = "$onto2hash" ]
-	then	echo 1>&2 "$from has already been merged onto $onto"
+	then	echo 1>&2 "git-repub: $from has already been merged onto $onto"
 		exit 1
 	fi
 fi
@@ -175,8 +175,7 @@ then
 	case $onto_parentage in
 	($ancestry_path$nl*)
 		: ok ;;
-	(*)	echo 1>&2 "it is not safe to update $from"
-		echo 1>&2 "$onto is not a descendent of $from"
+	(*)	echo 1>&2 "git-repub: unsafe to update $from because $onto is not an ancestor"
 		exit 1
 	esac
 fi
