@@ -203,10 +203,15 @@ fi
 
 if $unpub
 then
+	if ! git diff-index --quiet HEAD
+	then	echo 1>&2 "git-repub: please commit your changes before switching branches"
+		exit 1
+	fi
 	message="git repub --unpub --onto $onto --from $from"
 	git update-ref -m "$message" "refs/heads/$from" "$onto_hash^2"
-	git checkout "$from"
-	echo "Updated $from to $onto^2"
+	git read-tree --reset -u -v "$onto_hash^2"
+	echo "Updated branch '$from' to $onto^2"
+	git update-ref -m "$message" HEAD "refs/heads/$from"
 	exit 0
 fi
 
