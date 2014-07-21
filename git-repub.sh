@@ -155,12 +155,13 @@ then
 	fi
 fi
 
-# To unpub we reset the repub-from branch to repub-onto^2, i.e. the latest
-# published version. This is safe if repub-from is a second parent of one
-# of the direct ancestors of repub-onto, i.e. repub-from == repub-onto~N^2
-# for some N. To check this we verify that the repub-from..repub-onto
-# ancestry path is non-empty and it is a prefix of the first-parent history
-# of the repub-onto branch.
+# To unpub we will reset the repub-from branch to repub-onto^2,
+# i.e. the latest published version. This is safe if repub-from is
+# a second parent of one of the direct ancestors of repub-onto,
+# i.e. repub-from == repub-onto~N^2 for some N. To check this we
+# verify that the repub-from..repub-onto ancestry path is non-empty
+# and it is a prefix of the first-parent history of the repub-onto
+# branch.
 
 # We check there is a newline between $ancestry_path and the rest of
 # $onto_parentage. This cannot match if $ancestry_path is empty because
