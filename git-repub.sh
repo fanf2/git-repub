@@ -133,6 +133,10 @@ from_hash="$(git rev-parse "$from")"
 onto_hash="$(git rev-parse "$onto")"
 onto_head="$(git rev-parse --symbolic-full-name "$onto")"
 
+# To check a repub-onto branch looks plausible we just verify that the tree
+# at its head matches the tree at its second parent. (We could perhaps also
+# check the commit message?)
+
 if $check_onto
 then
 	onto_tree="$(git rev-parse $onto_hash^{tree} 2>&1)"
