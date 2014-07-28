@@ -184,12 +184,11 @@ then
 	fi
 fi
 
-# To unpub we will reset the repub-rw branch to repub-ff^2, i.e. the latest
-# published version. This is safe if repub-rw is a second parent of one of
-# the direct ancestors of repub-ff, i.e. repub-rw == repub-ff~N^2 for some
-# N. To check this we verify that the repub-rw..repub-ff ancestry path is
-# non-empty and it is a prefix of the first-parent history of the repub-ff
-# branch.
+# To unpub we will reset the rw branch to ff^2, i.e. the latest
+# published version. This is safe if rw is a second parent of one of
+# the direct ancestors of ff, i.e. rw == ff~N^2 for some N. To check
+# this we verify that the rw..ff ancestry path is non-empty and it is
+# a prefix of the first-parent history of the ff branch.
 
 # We check there is a newline between $ancestry_path and the rest of
 # $ff_parentage. This cannot match if $ancestry_path is empty because
