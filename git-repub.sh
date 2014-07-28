@@ -43,8 +43,6 @@ unpub=false
 status=false
 
 # safety checks
-check_rw=false
-check_ff=true
 force=false
 
 # setup modes
@@ -67,12 +65,9 @@ do
 		;;
 	--unpub)
 		unpub=true
-		check_rw=true
 		shift
 		;;
 	-s|--status)
-		check_rw=true
-		check_ff=true
 		status=true
 		shift
 		;;
@@ -110,8 +105,13 @@ done
 
 if $force
 then
-	check_rw=false
-	check_ff=false
+	check_head=false
+	check_match=false
+	check_hist=false
+else
+	check_head=true
+	check_match=true
+	check_hist=$unpub
 fi
 
 head="$(git rev-parse --abbrev-ref HEAD)"
@@ -153,12 +153,13 @@ then
 		git branch $ff $commit
 	fi
 	echo $message
-	check_ff=false
+	check_head=false
 fi
 
 if $start && $unpub
 then
-	check_rw=false
+	check_match=false
+	check_hist=false
 else
 	rw_hash="$(git rev-parse "$rw")"
 fi
@@ -170,7 +171,7 @@ ff_head="$(git rev-parse --symbolic-full-name "$ff")"
 # at its head matches the tree at its second parent. (We could perhaps also
 # check the commit message?)
 
-if $check_ff
+if $check_head
 then
 	ff_tree="$(git rev-parse $ff_hash^{tree} 2>&1)"
 	ff2hash="$(git rev-parse $ff_hash^2      2>&1)"
@@ -179,6 +180,9 @@ then
 	then	echo 1>&2 "git-repub: $ff does not look like a repub-ff branch"
 		$status || exit 1
 	fi
+fi
+
+if $check_match
 	if [ "$rw_hash" = "$ff2hash" ]
 	then	echo 1>&2 "git-repub: $rw and $ff are up-to-date"
 		$status || exit 1
@@ -197,7 +201,7 @@ fi
 $nl='
 '
 
-if $check_rw
+if $check_hist
 then
 	ff_parentage="$(git rev-list --first-parent $ff_hash)"
 	ancestry_path="$(git rev-list --ancestry-path $rw_hash..$ff_hash)"
@@ -228,11 +232,12 @@ then
 	fi
 	message="Reset rebasing branch $rw to latest repub branch $ff"
 	command="git repub --unpub --ff $ff --rw $rw"
-	git update-ref -m "$command" "refs/heads/$rw" "$ff_hash^2"
-	git read-tree --reset -u -v "$ff_hash^2"
-	echo $message
-	git update-ref -m "$command" HEAD "refs/heads/$rw"
-	exit 0
+	if $doit
+	then
+		git update-ref -m "$command" "refs/heads/$rw" "$ff_hash^2"
+		git read-tree --reset -u -v "$ff_hash^2"
+		git update-ref -m "$command" HEAD "refs/heads/$rw"
+	fi
 else
 	revision="$(git describe --tags "$rw" 2>/dev/null ||
 		git name-rev --name-only "$rw_hash")"
@@ -243,7 +248,7 @@ else
 				-p $ff_hash -p $rw_hash $rw_hash^{tree})"
 		git update-ref -m "$command" $ff_head $commit $ff_hash
 	fi
-	echo $message
 fi
 
+echo $message
 exit 0
