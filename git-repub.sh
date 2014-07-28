@@ -115,11 +115,6 @@ else
 fi
 
 head="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$head" = "HEAD" ]
-then	echo 1>&2 "git-repub: could not find the current branch"
-	echo 1>&2 "git-repub: is your head detached?"
-	exit 1
-fi
 
 # see if the current branch is configured for repub
 # only one of these should be set for any branch
