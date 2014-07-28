@@ -20,11 +20,15 @@ If one of --rw or --ff is missing, the other defaults to the current
 branch. If both are missing, the current branch's config is checked
 to find its corresponding rebasing or repub branch.
 
-    --dry-run    do not make any commits
-    --force      do not check that the --ff branch looks right
-    --init       same as --config --start
-    --config     remember the --rw and --ff branches
-    --start      create the --ff branch
+    --unpub     create or update --rw branch from --ff branch
+    --status    see if the branches are up-to-date
+
+    --dry-run   do not make any commits
+    --force     skip sanity checks
+
+    --init      same as --config --start
+    --config    remember the --rw and --ff branches
+    --start     create the --ff branch
 
 EOF
 	exit 1
@@ -66,7 +70,7 @@ do
 		check_rw=true
 		shift
 		;;
-	--status)
+	-s|--status)
 		check_rw=true
 		check_ff=true
 		status=true
