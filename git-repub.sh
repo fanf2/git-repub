@@ -178,6 +178,7 @@ then
 fi
 
 if $check_match
+then
 	if [ "$rw_hash" = "$ff2hash" ]
 	then	echo 1>&2 "git-repub: $rw and $ff are up-to-date"
 		$status || exit 1
