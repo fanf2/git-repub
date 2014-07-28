@@ -144,10 +144,10 @@ then
 	message="Start repub branch $ff for rebasing branch $rw"
 	command="git repub --rw $rw --ff $ff --start"
 	if $doit
-	then	commit="$(git commit-tree -m $message -m $command $empty_tree)"
+	then	commit="$(git commit-tree -m "$message" -m "$command" $empty_tree)"
 		git branch $ff $commit
 	fi
-	echo $message
+	echo "$message"
 	check_head=false
 fi
 
@@ -239,11 +239,11 @@ else
 	message="Update repub branch $ff to rebasing branch $rw revision $revision"
 	command="git repub --rw $rw --ff $ff # $revision"
 	if $doit
-	then	commit="$(git commit-tree -m $message -m $command \
+	then	commit="$(git commit-tree -m "$message" -m "$command" \
 				-p $ff_hash -p $rw_hash $rw_hash^{tree})"
 		git update-ref -m "$command" $ff_head $commit $ff_hash
 	fi
 fi
 
-echo $message
+echo "$message"
 exit 0
