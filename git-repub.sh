@@ -146,9 +146,10 @@ fi
 if $start && ! $unpub
 then
 	empty_tree="$(git hash-object -t tree /dev/null)"
-	message="git repub --rw $rw --ff $ff --start"
+	message="Start repub branch $ff for rebasing branch $rw"
+	command="git repub --rw $rw --ff $ff --start"
 	if $doit
-	then	commit="$(echo "$message" | git commit-tree $empty_tree)"
+	then	commit="$(git commit-tree -m $message -m $command $empty_tree)"
 		git branch $ff $commit
 	fi
 	echo $message
@@ -221,25 +222,28 @@ fi
 if $unpub
 then
 	if ! git diff-index --quiet HEAD
-	then	echo 1>&2 "git-repub: please commit your changes before switching branches"
+	then	echo 1>&2 "git-repub: git repub --unpub switches branches"
+		echo 1>&2 "git-repub: you need to commit your changes first"
 		exit 1
 	fi
-	message="git repub --unpub --ff $ff --rw $rw"
-	git update-ref -m "$message" "refs/heads/$rw" "$ff_hash^2"
+	message="Reset rebasing branch $rw to latest repub branch $ff"
+	command="git repub --unpub --ff $ff --rw $rw"
+	git update-ref -m "$command" "refs/heads/$rw" "$ff_hash^2"
 	git read-tree --reset -u -v "$ff_hash^2"
-	echo "Updated branch '$rw' to $ff^2"
-	git update-ref -m "$message" HEAD "refs/heads/$rw"
+	echo $message
+	git update-ref -m "$command" HEAD "refs/heads/$rw"
 	exit 0
+else
+	revision="$(git describe --tags "$rw" 2>/dev/null ||
+		git name-rev --name-only "$rw_hash")"
+	message="Update repub branch $ff to rebasing branch $rw revision $revision"
+	command="git repub --rw $rw --ff $ff # $revision"
+	if $doit
+	then	commit="$(git commit-tree -m $message -m $command \
+				-p $ff_hash -p $rw_hash $rw_hash^{tree})"
+		git update-ref -m "$command" $ff_head $commit $ff_hash
+	fi
+	echo $message
 fi
-
-message="git repub --rw $rw --ff $ff \
-# rev $(git describe --tags "$rw" 2>/dev/null ||
-	git name-rev --name-only "$rw_hash")"
-if $doit
-then	commit="$(echo "$message" |
-		 git commit-tree -p $ff_hash -p $rw_hash $rw_hash^{tree})"
-	git update-ref -m "$message" $ff_head $commit $ff_hash
-fi
-echo $message
 
 exit 0
