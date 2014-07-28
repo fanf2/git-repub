@@ -11,20 +11,20 @@ set -e
 
 usage() {
 	cat 1>&2 <<EOF
-usage: git repub [options] [--from <branch>] [--onto <branch>]
+usage: git repub [options] [--rw <branch>] [--ff <branch>]
 
-    --from <branch>    the rebasing branch to be published
-    --onto <branch>    the history-preserving publication branch
+    --rw <branch>    the rebasing branch to be published
+    --ff <branch>    the history-preserving publication branch
 
-If one of --from or --onto is missing, the other defaults to the
+If one of --rw or --ff is missing, the other defaults to the
 current branch. If both are missing, the current branch's config is
-checked to find its corresponding repub-from or repub-onto branch.
+checked to find its corresponding repub-rw or repub-ff branch.
 
     --dry-run    do not make any commits
-    --force      do not check that the --onto branch looks right
+    --force      do not check that the --ff branch looks right
     --init       same as --config --start
-    --config     remember the --from and --onto branches
-    --start      create the --onto branch
+    --config     remember the --rw and --ff branches
+    --start      create the --ff branch
 
 For more information see http://fanf.livejournal.com/128282.html
 
@@ -32,16 +32,16 @@ EOF
 	exit 1
 }
 
-check_from=false
-check_onto=true
+check_rw=false
+check_ff=true
 check_only=false
 force=false
 start=false
 config=false
 unpub=false
 doit=true
-onto=""
-from=""
+ff=""
+rw=""
 
 while [ $# != 0 ]
 do
@@ -55,7 +55,7 @@ do
 		shift
 		;;
 	--check)
-		check_from=true
+		check_rw=true
 		check_only=true
 		shift
 		;;
@@ -75,15 +75,15 @@ do
 		;;
 	--unpub)
 		unpub=true
-		check_from=true
+		check_rw=true
 		shift
 		;;
-	--from)
-		from=$2
+	--rw)
+		rw=$2
 		shift 2
 		;;
-	--onto)
-		onto=$2
+	--ff)
+		ff=$2
 		shift 2
 		;;
 	--dry-run)
@@ -98,107 +98,107 @@ done
 
 if $force
 then
-	check_from=false
-	check_onto=false
+	check_rw=false
+	check_ff=false
 fi
 
 head="$(git rev-parse --abbrev-ref HEAD)"
 
 # see if the current branch is configured for repub
 # only one of these should be set for any branch
-if [ -z "$from" ] && [ -z "$onto" ]
+if [ -z "$rw" ] && [ -z "$ff" ]
 then
-	from="$(git config "branch.$head.repub-from" || :)"
-	onto="$(git config "branch.$head.repub-onto" || :)"
+	rw="$(git config "branch.$head.repub-rw" || :)"
+	ff="$(git config "branch.$head.repub-ff" || :)"
 fi
 
-if ! $check_only && [ -z "$from" ] && [ -z "$onto" ]
+if ! $check_only && [ -z "$rw" ] && [ -z "$ff" ]
 then	echo 1>&2 "git-repub: could not find repub config for branch $head"
 	exit 1
 fi
 
 # missing branch name defaults to current branch
-if [ -z "$from" ]
-then from="$head"
+if [ -z "$rw" ]
+then rw="$head"
 fi
-if [ -z "$onto" ]
-then onto="$head"
+if [ -z "$ff" ]
+then ff="$head"
 fi
 
 if $start && ! $unpub
 then
 	empty_tree="$(git hash-object -t tree /dev/null)"
-	message="git repub --from $from --onto $onto --start"
+	message="git repub --rw $rw --ff $ff --start"
 	if $doit
 	then	commit="$(echo "$message" | git commit-tree $empty_tree)"
-		git branch $onto $commit
+		git branch $ff $commit
 	fi
 	echo $message
-	check_onto=false
+	check_ff=false
 fi
 
 if $start && $unpub
 then
-	check_from=false
+	check_rw=false
 else
-	from_hash="$(git rev-parse "$from")"
+	rw_hash="$(git rev-parse "$rw")"
 fi
 
-onto_hash="$(git rev-parse "$onto")"
-onto_head="$(git rev-parse --symbolic-full-name "$onto")"
+ff_hash="$(git rev-parse "$ff")"
+ff_head="$(git rev-parse --symbolic-full-name "$ff")"
 
-# To check a repub-onto branch looks plausible we just verify that the tree
+# To check a repub-ff branch looks plausible we just verify that the tree
 # at its head matches the tree at its second parent. (We could perhaps also
 # check the commit message?)
 
-if $check_onto
+if $check_ff
 then
-	onto_tree="$(git rev-parse $onto_hash^{tree} 2>&1)"
-	onto2hash="$(git rev-parse $onto_hash^2      2>&1)"
-	onto2tree="$(git rev-parse $onto2hash^{tree} 2>&1)"
-	if [ "$onto_tree" != "$onto2tree" ]
-	then	echo 1>&2 "git-repub: $onto does not look like a repub-onto branch"
+	ff_tree="$(git rev-parse $ff_hash^{tree} 2>&1)"
+	ff2hash="$(git rev-parse $ff_hash^2      2>&1)"
+	ff2tree="$(git rev-parse $ff2hash^{tree} 2>&1)"
+	if [ "$ff_tree" != "$ff2tree" ]
+	then	echo 1>&2 "git-repub: $ff does not look like a repub-ff branch"
 		exit 1
 	fi
 	if $check_only
 	then	exit 0
 	fi
-	if [ "$from_hash" = "$onto2hash" ]
-	then	echo 1>&2 "git-repub: $from and $onto are up-to-date"
+	if [ "$rw_hash" = "$ff2hash" ]
+	then	echo 1>&2 "git-repub: $rw and $ff are up-to-date"
 		exit 1
 	fi
 fi
 
-# To unpub we will reset the repub-from branch to repub-onto^2,
-# i.e. the latest published version. This is safe if repub-from is
-# a second parent of one of the direct ancestors of repub-onto,
-# i.e. repub-from == repub-onto~N^2 for some N. To check this we
-# verify that the repub-from..repub-onto ancestry path is non-empty
-# and it is a prefix of the first-parent history of the repub-onto
+# To unpub we will reset the repub-rw branch to repub-ff^2,
+# i.e. the latest published version. This is safe if repub-rw is
+# a second parent of one of the direct ancestors of repub-ff,
+# i.e. repub-rw == repub-ff~N^2 for some N. To check this we
+# verify that the repub-rw..repub-ff ancestry path is non-empty
+# and it is a prefix of the first-parent history of the repub-ff
 # branch.
 
 # We check there is a newline between $ancestry_path and the rest of
-# $onto_parentage. This cannot match if $ancestry_path is empty because
-# $onto_parentage does not start with a newline.
+# $ff_parentage. This cannot match if $ancestry_path is empty because
+# $ff_parentage does not start with a newline.
 $nl='
 '
 
-if $check_from
+if $check_rw
 then
-	onto_parentage="$(git rev-list --first-parent $onto_hash)"
-	ancestry_path="$(git rev-list --ancestry-path $from_hash..$onto_hash)"
-	case $onto_parentage in
+	ff_parentage="$(git rev-list --first-parent $ff_hash)"
+	ancestry_path="$(git rev-list --ancestry-path $rw_hash..$ff_hash)"
+	case $ff_parentage in
 	($ancestry_path$nl*)
 		: ok ;;
-	(*)	echo 1>&2 "git-repub: unsafe to update $from because $onto is not an ancestor"
+	(*)	echo 1>&2 "git-repub: unsafe to update $rw because $ff is not an ancestor"
 		exit 1
 	esac
 fi
 
 if $config
 then
-	git config "branch.$from.repub-onto" "$onto"
-	git config "branch.$onto.repub-from" "$from"
+	git config "branch.$rw.repub-ff" "$ff"
+	git config "branch.$ff.repub-rw" "$rw"
 fi
 
 if $unpub
@@ -207,21 +207,21 @@ then
 	then	echo 1>&2 "git-repub: please commit your changes before switching branches"
 		exit 1
 	fi
-	message="git repub --unpub --onto $onto --from $from"
-	git update-ref -m "$message" "refs/heads/$from" "$onto_hash^2"
-	git read-tree --reset -u -v "$onto_hash^2"
-	echo "Updated branch '$from' to $onto^2"
-	git update-ref -m "$message" HEAD "refs/heads/$from"
+	message="git repub --unpub --ff $ff --rw $rw"
+	git update-ref -m "$message" "refs/heads/$rw" "$ff_hash^2"
+	git read-tree --reset -u -v "$ff_hash^2"
+	echo "Updated branch '$rw' to $ff^2"
+	git update-ref -m "$message" HEAD "refs/heads/$rw"
 	exit 0
 fi
 
-message="git repub --from $from --onto $onto \
-# rev $(git describe --tags "$from" 2>/dev/null ||
-	git name-rev --name-only "$from_hash")"
+message="git repub --rw $rw --ff $ff \
+# rev $(git describe --tags "$rw" 2>/dev/null ||
+	git name-rev --name-only "$rw_hash")"
 if $doit
 then	commit="$(echo "$message" |
-		 git commit-tree -p $onto_hash -p $from_hash $from_hash^{tree})"
-	git update-ref -m "$message" $onto_head $commit $onto_hash
+		 git commit-tree -p $ff_hash -p $rw_hash $rw_hash^{tree})"
+	git update-ref -m "$message" $ff_head $commit $ff_hash
 fi
 echo $message
 
