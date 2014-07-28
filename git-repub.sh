@@ -30,22 +30,49 @@ EOF
 	exit 1
 }
 
+# branches
+rw=""
+ff=""
+
+# alternative modes
+unpub=false
+
+# safety checks
 check_rw=false
 check_ff=true
 check_only=false
 force=false
+
+# setup modes
 start=false
 config=false
-unpub=false
+
+# everything except for the changes
 doit=true
-ff=""
-rw=""
 
 while [ $# != 0 ]
 do
 	case "$1" in
+	--rw)
+		rw=$2
+		shift 2
+		;;
+	--ff)
+		ff=$2
+		shift 2
+		;;
+	--unpub)
+		unpub=true
+		check_rw=true
+		shift
+		;;
 	--force)
 		force=true
+		shift
+		;;
+	--init)
+		start=true
+		config=true
 		shift
 		;;
 	--start)
@@ -65,24 +92,6 @@ do
 		config=true
 		doit=false
 		shift
-		;;
-	--init)
-		start=true
-		config=true
-		shift
-		;;
-	--unpub)
-		unpub=true
-		check_rw=true
-		shift
-		;;
-	--rw)
-		rw=$2
-		shift 2
-		;;
-	--ff)
-		ff=$2
-		shift 2
 		;;
 	--dry-run)
 		doit=false
