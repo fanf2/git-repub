@@ -194,7 +194,7 @@ fi
 # We check there is a newline between $ancestry_path and the rest of
 # $ff_parentage. This cannot match if $ancestry_path is empty because
 # $ff_parentage does not start with a newline.
-$nl='
+nl='
 '
 
 if $check_hist
