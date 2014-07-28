@@ -16,17 +16,15 @@ usage: git repub [options] [--rw <branch>] [--ff <branch>]
     --rw <branch>    the rebasing branch to be published
     --ff <branch>    the history-preserving publication branch
 
-If one of --rw or --ff is missing, the other defaults to the
-current branch. If both are missing, the current branch's config is
-checked to find its corresponding repub-rw or repub-ff branch.
+If one of --rw or --ff is missing, the other defaults to the current
+branch. If both are missing, the current branch's config is checked
+to find its corresponding rebasing or repub branch.
 
     --dry-run    do not make any commits
     --force      do not check that the --ff branch looks right
     --init       same as --config --start
     --config     remember the --rw and --ff branches
     --start      create the --ff branch
-
-For more information see http://fanf.livejournal.com/128282.html
 
 EOF
 	exit 1
@@ -125,6 +123,7 @@ if [ -z "$ff" ]
 then ff="$head"
 fi
 
+# create initial commit on ff branch
 if $start && ! $unpub
 then
 	empty_tree="$(git hash-object -t tree /dev/null)"
@@ -169,12 +168,11 @@ then
 	fi
 fi
 
-# To unpub we will reset the repub-rw branch to repub-ff^2,
-# i.e. the latest published version. This is safe if repub-rw is
-# a second parent of one of the direct ancestors of repub-ff,
-# i.e. repub-rw == repub-ff~N^2 for some N. To check this we
-# verify that the repub-rw..repub-ff ancestry path is non-empty
-# and it is a prefix of the first-parent history of the repub-ff
+# To unpub we will reset the repub-rw branch to repub-ff^2, i.e. the latest
+# published version. This is safe if repub-rw is a second parent of one of
+# the direct ancestors of repub-ff, i.e. repub-rw == repub-ff~N^2 for some
+# N. To check this we verify that the repub-rw..repub-ff ancestry path is
+# non-empty and it is a prefix of the first-parent history of the repub-ff
 # branch.
 
 # We check there is a newline between $ancestry_path and the rest of
@@ -190,7 +188,7 @@ then
 	case $ff_parentage in
 	($ancestry_path$nl*)
 		: ok ;;
-	(*)	echo 1>&2 "git-repub: unsafe to update $rw because $ff is not an ancestor"
+	(*)	echo 1>&2 "git-repub: unsafe to update $rw because it has diverged from $ff"
 		exit 1
 	esac
 fi
