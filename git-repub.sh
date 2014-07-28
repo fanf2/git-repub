@@ -36,11 +36,11 @@ ff=""
 
 # alternative modes
 unpub=false
+status=false
 
 # safety checks
 check_rw=false
 check_ff=true
-check_only=false
 force=false
 
 # setup modes
@@ -66,6 +66,12 @@ do
 		check_rw=true
 		shift
 		;;
+	--status)
+		check_rw=true
+		check_ff=true
+		status=true
+		shift
+		;;
 	--force)
 		force=true
 		shift
@@ -77,11 +83,6 @@ do
 		;;
 	--start)
 		start=true
-		shift
-		;;
-	--check)
-		check_rw=true
-		check_only=true
 		shift
 		;;
 	--config)
@@ -119,7 +120,7 @@ then
 	ff="$(git config "branch.$head.repub-ff" || :)"
 fi
 
-if ! $check_only && [ -z "$rw" ] && [ -z "$ff" ]
+if [ -z "$rw" ] && [ -z "$ff" ]
 then	echo 1>&2 "git-repub: could not find repub config for branch $head"
 	exit 1
 fi
@@ -166,14 +167,11 @@ then
 	ff2tree="$(git rev-parse $ff2hash^{tree} 2>&1)"
 	if [ "$ff_tree" != "$ff2tree" ]
 	then	echo 1>&2 "git-repub: $ff does not look like a repub-ff branch"
-		exit 1
-	fi
-	if $check_only
-	then	exit 0
+		$status || exit 1
 	fi
 	if [ "$rw_hash" = "$ff2hash" ]
 	then	echo 1>&2 "git-repub: $rw and $ff are up-to-date"
-		exit 1
+		$status || exit 1
 	fi
 fi
 
@@ -200,6 +198,10 @@ then
 	(*)	echo 1>&2 "git-repub: unsafe to update $rw because it has diverged from $ff"
 		exit 1
 	esac
+fi
+
+if $status
+then exit
 fi
 
 if $config
