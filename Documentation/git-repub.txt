@@ -8,48 +8,64 @@ git-repub - Make rebasing branches and their history publishable
 SYNOPSIS
 --------
 [verse]
-'git repub' [options] [--from <branch>] [--onto <branch>]
+'git repub' [options] [--rw <branch>] [--ff <branch>]
 
 DESCRIPTION
 -----------
-The 'git repub' command maintains a branch that you can use to record
-the history of another branch that is repeatedly rebased. Updates to
-the history branch are fast-forwards, so they are convenient to
-publish.
+The 'git repub' command maintains a "repub branch" that you can use to
+record the history of another "rebasing branch" that is repeatedly
+rewound. Updates to the repub branch are fast-forwards, so they are
+convenient to publish.
 
-The --from branch is the rebasing branch and the --onto branch is the
-history publication branch onto which 'git repub' will add another
-commit. If one of --from or --onto is missing, the other defaults to
-the current branch. If both are missing, the current branch's config
-is checked to find its corresponding repub-from or repub-onto branch.
+The `--rw` branch is the rebasing branch and the `--ff` branch is the
+repub branch onto which 'git repub' will add another commit. If one of
+`--rw` or `--ff` is missing, the other defaults to the current branch.
+If both are missing, the current branch's config is checked to find
+its corresponding rebasing or repub branch.
 
-The commits on a repub-onto branch are merges, where the first parent
-is the previous head of the repub-onto branch and the second parent is
-the head of the repub-from branch. The tree resulting from the merge
-is always the same as the tree at the head of the repub-from branch -
-the previous contents of the repub-onto branch are ignored. Because
-this is a somewhat heavy-handed operation, and to protect against
-mistakes, by default 'git repub' checks that the head of the
-repub-onto branch matches this structure.
+The commits on a repub branch are merges, where the first parent is
+the previous head of the repub branch and the second parent is the
+head of the rebasing branch. The tree resulting from the merge is
+always the same as the tree at the head of the rebasing branch - the
+previous contents of the repub branch are ignored. Because this is a
+somewhat heavy-handed operation, and to protect against mistakes, by
+default 'git repub' checks that the head of the repub branch matches
+this structure.
 
 The 'git repub' command performs a similar function to `stg publish`,
-though the structure of a repub-onto branch is rather different from a
-StGit public branch. A repub-onto branch can be thought of as tracking
-the head of the repub-from branch in a similar way to its reflog,
+though the structure of a repub branch is rather different from a
+StGit public branch. A repub branch can be thought of as tracking
+the head of the rebasing branch in a similar way to its reflog,
 except it is updated manually and it is shareable.
+
+People who have obtained a copy of a repub branch can use `git repub
+--unpub` to update their copy of the rebasing branch to the latest
+version. The weird structure of the repub branch makes it awkward to
+work with directly.
+
+The `git repub` command is intended to support one writer and multiple
+readers, for example to support code review, or deployment of local
+patches. It does not provide any support for collaboration between
+multiple people working on a topic branch.
 
 OPTIONS
 -------
---from <branch>::
+--rw <branch>::
 	The rebasing branch whose head is to be published. If the
-	--from option is not given and --onto is given, the --from
+	`--rw` option is not given and `--ff` is given, the `--rw`
 	<branch> defaults to the current branch.
 
---onto <branch>::
-	The history-preserving publication branch on which a merge
-	commit will be constructed. If the --onto option is not given
-	and --from is given, the --onto <branch> defaults to the
-	current branch.
+--ff <branch>::
+	The repub branch on which a merge commit will be constructed.
+	If the `--ff` option is not given and `--rw` is given, the
+	`--ff` <branch> defaults to the current branch.
+
+-s|--status::
+	Report the current state of the repub and rebasing branches.
+
+--unpub::
+	Update the rebasing branch to the latest version on the repub
+	branch, provided the repub branch is newer.
 
 --dry-run::
 	Do not make any commits, but report what would happen.
@@ -67,26 +83,27 @@ OPTIONS
 	commit. Equivalent to --config --dry-run.
 
 --start::
-	Create the --onto branch. Two commits will be created
+	Create the repub branch. Two commits will be created
 	immediately: the first commit will be empty and the second
 	commit will be a 'git repub' merge.
+
+	In `--unpub` mode, create the rebasing branch if necessary.
 
 --force::
 	Do not check that the head of the --onto branch is a 'git
 	repub' merge.
 
-
 CONFIGURATION
 -------------
 
-branch.<branch>.repub-onto::
-	Indicates the <branch> is a repub-from branch, and the
-	corresponding repub-onto branch is the value of this config
+branch.<branch>.repub-ff::
+	Indicates that the <branch> is a rebasing branch, and the
+	corresponding repub branch is the value of this config
 	setting.
 
-branch.<branch>.repub-from::
-	Indicates the <branch> is a repub-onto branch, and the
-	corresponding repub-from branch is the value of this config
+branch.<branch>.repub-rw::
+	Indicates that the <branch> is a repub branch, and the
+	corresponding rebasing branch is the value of this config
 	setting.
 
 SEE ALSO

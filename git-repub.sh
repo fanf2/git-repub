@@ -20,6 +20,7 @@ If one of --rw or --ff is missing, the other defaults to the current
 branch. If both are missing, the current branch's config is checked
 to find its corresponding rebasing or repub branch.
 
+    --push      push the -ff branch
     --unpub     create or update --rw branch from --ff branch
     --status    see if the branches are up-to-date
 
@@ -39,6 +40,7 @@ rw=""
 ff=""
 
 # alternative modes
+push=false
 unpub=false
 status=false
 
@@ -62,6 +64,10 @@ do
 	--ff)
 		ff=$2
 		shift 2
+		;;
+	-p|--push)
+		push=true
+		shift
 		;;
 	--unpub)
 		unpub=true
