@@ -1,0 +1,10 @@
+The 'git repub' command maintains a "repub branch" that you can use to
+record the history of another "rebasing branch" that is repeatedly
+rewound. Updates to the repub branch are fast-forwards, so they are
+convenient to publish.
+
+It performs a similar function to `stg publish`, though the structure
+of a repub branch is rather different from a StGit public branch. A
+repub branch can be thought of as tracking the head of the rebasing
+branch in a similar way to its reflog, except it is updated manually
+and it is shareable.
