@@ -166,8 +166,11 @@ if $start && $unpub
 then
 	check_match=false
 	check_hist=false
-else
-	rw_hash="$(git rev-parse "$rw")"
+elif ! rw_hash="$(git rev-parse "$rw" 2>/dev/null)"
+then
+	echo 1>&2 "git-repub: branch $rw does not exist"
+	check_match=false
+	check_hist=false
 fi
 
 ff_hash="$(git rev-parse "$ff")"
