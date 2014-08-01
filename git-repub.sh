@@ -117,7 +117,12 @@ then
 else
 	check_head=true
 	check_match=true
-	check_hist=$unpub
+	if $unpub || $status
+	then
+		check_hist=true
+	else
+		check_hist=false
+	fi
 fi
 
 head="$(git rev-parse --abbrev-ref HEAD)"
@@ -209,7 +214,8 @@ then
 	ancestry_path="$(git rev-list --ancestry-path $rw_hash..$ff_hash)"
 	case $ff_parentage in
 	($ancestry_path$nl*)
-		: ok ;;
+		echo 1>&2 "git-repub: $rw needs unpub because it is behind $ff"
+		;;
 	(*)	echo 1>&2 "git-repub: unsafe to update $rw because it has diverged from $ff"
 		exit 1
 	esac
