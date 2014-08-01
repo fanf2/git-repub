@@ -248,7 +248,7 @@ then
 	then
 		git update-ref -m "$command" "refs/heads/$rw" "$ff_hash^2"
 		git read-tree --reset -u -v "$ff_hash^2"
-		git update-ref -m "$command" HEAD "refs/heads/$rw"
+		git symbolic-ref -m "$command" HEAD "refs/heads/$rw"
 	fi
 else
 	revision="$(git describe --tags "$rw" 2>/dev/null ||
