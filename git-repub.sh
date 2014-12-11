@@ -30,6 +30,7 @@ to find its corresponding rebasing or repub branch.
     --init      same as --config --start
     --config    remember the --rw and --ff branches
     --start     create the --ff branch
+                or the -rw branch in --unpub mode
 
 EOF
 	exit 1
