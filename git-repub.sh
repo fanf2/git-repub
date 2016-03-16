@@ -193,10 +193,20 @@ then
 	fi
 fi
 
-if $check_match
+if $push || $check_match
 then
 	if [ "$rw_hash" = "$ff2hash" ]
 	then	echo 1>&2 "git-repub: $rw and $ff are up-to-date"
+		if $push
+		then
+			if ! remote="$(git config branch."$ff".remote)"
+			then
+				echo 1>&2 "git-repub: could not get remote for $ff"
+				exit $?
+			fi
+			git push "$remote" "$ff_head"
+			exit $?
+		fi
 		$status || exit 1
 	fi
 fi
