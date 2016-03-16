@@ -193,18 +193,21 @@ then
 	fi
 fi
 
+push() {
+	if ! remote="$(git config branch."$ff".remote)"
+	then	e=$?
+		echo 1>&2 "git-repub: could not get remote for $ff"
+		exit $e
+	fi
+	git push "$remote" "$ff_head"
+}
+
 if $push || $check_match
 then
 	if [ "$rw_hash" = "$ff2hash" ]
 	then	echo 1>&2 "git-repub: $rw and $ff are up-to-date"
 		if $push
-		then
-			if ! remote="$(git config branch."$ff".remote)"
-			then
-				echo 1>&2 "git-repub: could not get remote for $ff"
-				exit $?
-			fi
-			git push "$remote" "$ff_head"
+		then	push
 			exit $?
 		fi
 		$status || exit 1
@@ -274,4 +277,9 @@ else
 fi
 
 echo "$message"
+
+if $push
+then push
+fi
+
 exit 0
